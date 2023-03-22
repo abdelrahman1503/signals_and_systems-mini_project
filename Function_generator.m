@@ -1,7 +1,7 @@
 %% Reading the sampling frequency and checking it
 f_sampling = input("Please enter the sampling frequency of the signal: ");
 while f_sampling <= 0
-    fprintf('Sampling frequency musy be positive integer\n');
+    fprintf("\t*** Invalid Input ***\t\n");
     f_sampling = input("Please enter the sampling frequency of the signal: ");
 end
 %% Reading the start and end time and the number of breakpoints
@@ -10,7 +10,7 @@ t_end = input("Please enter the end of the time scale: ");
 bp_number = input("Please enter the number of breakpoints: ");
 %% Validating the number of breakpoints
 while is_not_valid_bp(bp_number)
-    fprintf("Invalid input please try again.....\n");
+    fprintf("\t*** Invalid Input ***\t\n");
     input("Please enter the number of breakpoints: ");
 end
 %% setting the breakpoints time
@@ -41,37 +41,37 @@ for j = 1 : length(time_points)-1
     answer = input('Please enter the number corresponding to your choice: ');
     switch answer
          case 1
-            amp = input(sprintf('DC Signal Amplitude:'));
+            amp = input(sprintf('DC Signal Amplitude: '));
             function_points{j} = amp + 0 * lin_spaces{j};
         case 2
-            slope = input(sprintf('Ramp Signal Slope:'));
+            slope = input(sprintf('Ramp Signal Slope: '));
             intercept = input(sprintf('Ramp Signal Intercept: '));
             function_points{j} = slope * lin_spaces{j} + intercept;
         case 3
-            order = input(sprintf('GOP Signal Order:'));
+            order = input(sprintf('GOP Signal Order: '));
             while order < 1 || order ~= round(order)
-                fprintf("*** Invalid Input ***");
-                order = input(sprintf('GOP Signal Order:'));
+                fprintf("\t*** Invalid Input ***\t\n");
+                order = input(sprintf('GOP Signal Order: '));
             end
             function_points{j} = zeros(1, length(lin_spaces{j}));
             for k = order:-1:1
-                amp = input(sprintf('t^%d Amplitude:', k));
+                amp = input(sprintf('t^%d Amplitude: ', k));
                 function_points{j} = function_points{j} + amp * lin_spaces{j} .^ k ;
             end
-            intercept = input(sprintf('GOP Signal Intercept:'));
+            intercept = input(sprintf('GOP Signal Intercept: '));
             function_points{j} = function_points{j} + intercept;
         case 4
-            amp = input(sprintf('Exponential Signal Amplitude:'));
-            exponent = input(sprintf('Exponential Signal Exponent:'));
+            amp = input(sprintf('Exponential Signal Amplitude: '));
+            exponent = input(sprintf('Exponential Signal Exponent: '));
             function_points{j} = amp * exp( exponent * lin_spaces{j});
         case 5
-            amp = input(sprintf('Sinusoidal Signal Amplitude:'));
-            freq = input(sprintf('Sinusoidal Signal Frequency:'));
+            amp = input(sprintf('Sinusoidal Signal Amplitude: '));
+            freq = input(sprintf('Sinusoidal Signal Frequency: '));
             while freq <=0
-                fprintf("*** Invalid Input ***");
-                freq = input(sprintf('Sinusoidal Signal Frequency:'));
+                fprintf("\t*** Invalid Input ***\t\n");
+                freq = input(sprintf('Sinusoidal Signal Frequency: '));
             end
-            phase_s = input(sprintf('Sinusoidal Signal Phase:'));
+            phase_s = input(sprintf('Sinusoidal Signal Phase: '));
             function_points{j} = amp * sin( 2 * pi * freq * lin_spaces{j} + phase_s);
         case 6
             amp = input('Please enter the amplitude of the function: ');
@@ -109,25 +109,25 @@ while flag ~= 0
 
     switch answer
         case 1
-            t_S = input(sprintf('Scale Value:\t'));
+            t_S = input('Scale Value: ');
             x = t_S * x;
         case 2
             t = -t;
         case 3
-            t_SH = input(sprintf('Shift Value X[ t - T ]:\t'));
+            t_SH = input('Shift Value X[ t - T ]: ');
             t = t + t_SH ;
         case 4
-            expand = input(sprintf('Expanding Value ]0 , 1[ :\t'));
+            expand = input('Expanding Value ]0 , 1[ : ');
             while expand <=0 || expand >=1
                 fprintf("\t*** Invalid Input ***\t\n");
-                expand = input(sprintf('Expanding Value ]0 , 1[ :\t'));
+                expand = input('Expanding Value ]0 , 1[ : ');
             end
             t = t / expand ;
         case 5
-            t_C = input(sprintf('Compressing Value ]1 , inf[ :\t'));
+            t_C = input('Compressing Value ]1 , inf[ : ');
             while t_C <=1
                 fprintf("\t*** Invalid Input ***\t\n");
-                t_C = input(sprintf('Compressing Value ]1 , inf[ :\t'));
+                t_C = input('Compressing Value ]1 , inf[ : ');
             end
             t = t / t_C ;
         case 6
