@@ -1,4 +1,4 @@
-%% Reading the sampling frequency and checking it
+%% Reading the sampling frequency and validating it
 f_sampling = input("Please enter the sampling frequency of the signal: ");
 while f_sampling <= 0
     fprintf("\t*** Invalid Input ***\t\n");
@@ -8,62 +8,62 @@ end
 t_start = input("Please enter the start of the time scale: ");
 t_end = input("Please enter the end of the time scale: ");
 bp_number = input("Please enter the number of breakpoints: ");
-%% Validating the number of breakpoints
-while is_not_valid_bp(bp_number)
+%% Validating number of breakpoints
+while bp_number < 0 || round(bp_number) ~= bp_number
     fprintf("\t*** Invalid Input ***\t\n");
     input("Please enter the number of breakpoints: ");
 end
-%% setting the breakpoints time
-breakpoints_times = t_start * ones(1, bp_number);
-t_last = t_start;
-for i = 1: bp_number
-    
-    t_bp_time = input(sprintf('Break point #%d time: ', i));
-    t_bp_time = allign_to_sample_point(t_bp_time, f_sampling);
-   
-    while is_not_valid_pbtime(t_bp_time, t_last, t_end)
-        disp("Invalid input please try again....");
-        t_bp_time = input(sprintf('Break point #%d time: ', i));
-        t_bp_time = allign_to_sample_point(t_bp_time, f_sampling);
+%% Setting breakpoint times
+prev_time = t_start;
+bp_times = zeros(1, bp_number);
+for i = 1 : bp_number
+    bp_t = input(sprintf('Enter the time of breakpoint number %d: ', i));
+    while bp_t <= prev_time || bp_t >= t_end
+        fprintf("\t*** Invalid Input ***\t\n");
+        bp_t = input(sprintf('Enter the time of breakpoint number %d: ', i));
     end
-    breakpoints_times(i) = t_bp_time;
-    t_last = t_bp_time;
+    if bp_t * f_sampling ~= round(bp_t * f_sampling)
+        bp_t = ceil(bp_t(i) * f_sampling) / f_sampling;
+    end
+    prev_time = bp_t;
+    bp_times(i) = bp_t;
 end
-time_points = [ t_start      breakpoints_times     t_end];
-lin_spaces = cell(1,length(time_points)-1) ;                                                              
-function_points = cell(1,length(time_points)-1) ; 
-%% definning each region
-for j = 1 : length(time_points)-1
-    t_s = time_points(j);
-    t_e = time_points(j+1);
-    lin_spaces{j} = linspace(t_s , t_e, ( t_e - t_s ) * f_sampling);
-    fprintf('What is this region:\n1-DC signal\n2-Ramp signal\n3-General Order polynomial\n4-Exponential Signal\n5-Sinusoidal Signal\n6-Sinc function\n7-Triangle Pulse\n');
+t_points = [t_start bp_times t_end];
+t_var = cell(1, length(t_points)-1);
+f_t = cell(1, length(t_points)-1);
+%% Giving definition for each region
+for j = 1 : length(t_points)-1
+    t_s = t_points(j);
+    t_e = t_points(j+1);
+    t_var{j} = linspace(t_s , t_e, ( t_e - t_s ) * f_sampling);
+    fprintf('Region %d\n', j);
+    fprintf('1-DC signal\n2-Ramp signal\n3-General Order polynomial\n4-Exponential Signal\n5-Sinusoidal Signal\n6-Sinc function\n7-Triangle Pulse\n');
     answer = input('Please enter the number corresponding to your choice: ');
     switch answer
          case 1
             amp = input(sprintf('DC Signal Amplitude: '));
-            function_points{j} = amp + 0 * lin_spaces{j};
+            f_t{j} = amp + 0 * t_var{j};
         case 2
             slope = input(sprintf('Ramp Signal Slope: '));
             intercept = input(sprintf('Ramp Signal Intercept: '));
-            function_points{j} = slope * lin_spaces{j} + intercept;
+            f_t{j} = slope * t_var{j} + intercept;
         case 3
             order = input(sprintf('GOP Signal Order: '));
             while order < 1 || order ~= round(order)
                 fprintf("\t*** Invalid Input ***\t\n");
                 order = input(sprintf('GOP Signal Order: '));
             end
-            function_points{j} = zeros(1, length(lin_spaces{j}));
+            f_t{j} = zeros(1, length(t_var{j}));
             for k = order:-1:1
                 amp = input(sprintf('t^%d Amplitude: ', k));
-                function_points{j} = function_points{j} + amp * lin_spaces{j} .^ k ;
+                f_t{j} = f_t{j} + amp * t_var{j} .^ k ;
             end
             intercept = input(sprintf('GOP Signal Intercept: '));
-            function_points{j} = function_points{j} + intercept;
+            f_t{j} = f_t{j} + intercept;
         case 4
             amp = input(sprintf('Exponential Signal Amplitude: '));
             exponent = input(sprintf('Exponential Signal Exponent: '));
-            function_points{j} = amp * exp( exponent * lin_spaces{j});
+            f_t{j} = amp * exp( exponent * t_var{j});
         case 5
             amp = input(sprintf('Sinusoidal Signal Amplitude: '));
             freq = input(sprintf('Sinusoidal Signal Frequency: '));
@@ -72,36 +72,36 @@ for j = 1 : length(time_points)-1
                 freq = input(sprintf('Sinusoidal Signal Frequency: '));
             end
             phase_s = input(sprintf('Sinusoidal Signal Phase: '));
-            function_points{j} = amp * sin( 2 * pi * freq * lin_spaces{j} + phase_s);
+            f_t{j} = amp * sin( 2 * pi * freq * t_var{j} + phase_s);
         case 6
             amp = input('Please enter the amplitude of the function: ');
             center_s = input('Please enter the center shift: ');
             center_s = center_s + t_s;
-            function_points{j} = amp * sinc(lin_spaces{j} - center_s);
+            f_t{j} = amp * sinc(t_var{j} - center_s);
         case 7
             amp = input('Please enter the amplitude of the function: ');
             center_s = input('Please enter the center shift: ');
             width = input('Please enter the width of the signal: ');
             center_s = center_s + t_s;
-            function_points{j} = triangularPulse(center_s - width/2, center_s, center_s + width/2, lin_spaces{j});
+            f_t{j} = triangularPulse(center_s - width/2, center_s, center_s + width/2, t_var{j});
     end
 end
 %% plotting the orginal signal without operations
 t = [ ];
-for j = 1 : length(lin_spaces)
-    t = [ t lin_spaces{j}(1:end) ];
+for j = 1 : length(t_var)
+    t = [ t t_var{j}(1:end) ];
 end
- t = [ t lin_spaces{end}(end) ];
+ t = [ t t_var{end}(end) ];
  
 x = [ ];
-for j = 1 : length(function_points)
-    x = [ x function_points{j}(1:end) ];
+for j = 1 : length(f_t)
+    x = [ x f_t{j}(1:end) ];
 end
-x = [ x function_points{end}(end) ];
+x = [ x f_t{end}(end) ];
 
 figure;
 plot(t, x);
-%% signal operations
+%% Signal operations
 flag = 1;
 while flag ~= 0
     fprintf("Choose an operation:\n1-Amplitude Scaling\n2-Time Reversal\n3-Time Shift\n4-Expanding the Signal\n5-Compressing the Signal\n6-Clipping the signal\n7-The First Derivative of the signal\n8-No operation\n");
@@ -158,19 +158,3 @@ while flag ~= 0
         
     end
 end
-%% functions
-function y = is_not_valid_bp(bp_number)
-    y =  bp_number < 0 || round(bp_number) ~= bp_number;                                                                                          
-end
-
-function y = allign_to_sample_point(pbtime, sf)
-     y = pbtime;
-    if pbtime * sf ~= round(pbtime * sf)
-        y = ceil(pbtime * sf) / sf;
-    end
-end
-
-function y = is_not_valid_pbtime( pbtime, prev_time, end_)             
-y =  pbtime <= prev_time || pbtime >= end_;
-end
-
