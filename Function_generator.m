@@ -76,12 +76,14 @@ for j = 1 : length(time_points)-1
         case 6
             amp = input('Please enter the amplitude of the function: ');
             center_s = input('Please enter the center shift: ');
-            function_points{j} = amp * sinc(center_s * lin_spaces{j});
+            center_s = center_s + t_s;
+            function_points{j} = amp * sinc(lin_spaces{j} - center_s);
         case 7
             amp = input('Please enter the amplitude of the function: ');
             center_s = input('Please enter the center shift: ');
             width = input('Please enter the width of the signal: ');
-            function_points{j} = triangularPulse(center_s - width/2, center_s, center_s + width/2,lin_spaces{j});
+            center_s = center_s + t_s;
+            function_points{j} = triangularPulse(center_s - width/2, center_s, center_s + width/2, lin_spaces{j});
     end
 end
 %% plotting the orginal signal without operations
