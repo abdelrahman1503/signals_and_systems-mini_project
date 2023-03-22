@@ -102,7 +102,7 @@ plot(t, x);
 %% signal operations
 flag = 1;
 while flag ~= 0
-    fprintf("Choose an operation:\n1-Amplitude Scaling\n2-Time Reversal\n3-Time Shift\n4-Expanding the Signal\n5-Compressing the Signal\n6-No operation\n");
+    fprintf("Choose an operation:\n1-Amplitude Scaling\n2-Time Reversal\n3-Time Shift\n4-Expanding the Signal\n5-Compressing the Signal\n6-Clipping the signal\n7-The First Derivative of the signal\n8-No operation\n");
     answer = input('Please enter the number corresponding to your choice: ');
 
     switch answer
@@ -115,12 +115,12 @@ while flag ~= 0
             t_SH = input(sprintf('Shift Value X[ t - T ]:\t'));
             t = t + t_SH ;
         case 4
-            exponent = input(sprintf('Expanding Value ]0 , 1[ :\t'));
-            while exponent <=0 || exponent >=1
+            expand = input(sprintf('Expanding Value ]0 , 1[ :\t'));
+            while expand <=0 || expand >=1
                 fprintf("\t*** Invalid Input ***\t\n");
-                exponent = input(sprintf('Expanding Value ]0 , 1[ :\t'));
+                expand = input(sprintf('Expanding Value ]0 , 1[ :\t'));
             end
-            t = t / exponent ;
+            t = t / expand ;
         case 5
             t_C = input(sprintf('Compressing Value ]1 , inf[ :\t'));
             while t_C <=1
@@ -129,9 +129,27 @@ while flag ~= 0
             end
             t = t / t_C ;
         case 6
+            clip_u = input('Enter the upper limit: ');
+            clip_l = input('Enter the lower limit: ');
+            while clip_u > max(x) || clip_l < min(x)
+                fprintf("\t*** Invalid Input ***\t\n");
+                clip_u = input('Enter the upper limit: ');
+                clip_l = input('Enter the lower limit: ');
+            end
+            for i = 1 : length(x)
+                if x(1, i) > clip_u
+                    x(1, i) = clip_u;
+                elseif x(1, i) < clip_l
+                    x(1, i) = clip_l;
+                end
+            end
+        case 7
+            x = diff(x);
+            x(end + 1) = x(end);
+        case 8
             flag = 0;
     end
-
+    
     if flag == 1
         figure;
         plot(t, x);
